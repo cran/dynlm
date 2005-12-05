@@ -9,7 +9,7 @@ dynlm <- function(formula, data, subset, weights, na.action,
     assign("dynformula", function(x) structure(x, class = unique(c("dynformula", oldClass(x)))), envir = Zenv)
     ## define convenience versions of diff() and lag() and season()
     assign("L", function(x, k = 1) lag(x, k = -k), envir = Zenv)
-    assign("d", function(x, k = 1) diff(x, k = k), envir = Zenv)
+    assign("d", function(x, lag = 1) diff(x, lag = lag), envir = Zenv)
     assign("season", function(x) 
     {
         freq <- frequency(x)
