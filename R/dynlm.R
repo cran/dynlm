@@ -79,7 +79,7 @@ dynlm <- function(formula, data, subset, weights, na.action,
         
     ## convert back to "ts" or "numeric"
     if("ts" %in% orig.class && is.regular(mf1, strict = TRUE)) {
-      for(i in 1:ncol(mf)) if(!is.factor(mf[,i])) mf[,i] <- as.ts.zoo(mf[,i])
+      for(i in 1:ncol(mf)) if(!is.factor(mf[,i])) mf[,i] <- zoo:::as.ts.zoo(mf[,i])
     }
     if(all(orig.class == "numeric")) {
       for(i in 1:ncol(mf)) if(!is.factor(mf[,i])) mf[,i] <- as.vector(mf[,i])
