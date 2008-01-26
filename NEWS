@@ -1,0 +1,13 @@
+Changes in Version 0.2-0
+
+  o added support for instrumental variables regression
+    (two-stage least squares) via formulas like
+      dynlm(y ~ x1 + x2 | z1 + z2 + z3, data = mydata)
+    where z1, z2, z3 are the instruments.
+  
+  o enabled specification of multiple lags via formulas like
+      dynlm(y ~ L(x, 0:4), data = mydata)
+    where y is regressed on x and lags 1 through 4 of x.
+
+  o fixed bug in time properties when there were leading
+    NAs in the data

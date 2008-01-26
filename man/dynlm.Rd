@@ -1,14 +1,23 @@
 \name{dynlm}
 \alias{dynlm}
+\alias{print.dynlm}
+\alias{summary.dynlm}
+\alias{print.summary.dynlm}
+\alias{time.dynlm}
+\alias{index.dynlm}
+\alias{start.dynlm}
+\alias{end.dynlm}
+
 \title{Dynamic Linear Models and Time-Series Regression}
+
 \description{
 Interface to \code{\link{lm.wfit}} for fitting dynamic linear models
 and time-series regression relationships.
 }
+
 \usage{dynlm(formula, data, subset, weights, na.action, method = "qr",
   model = TRUE, x = FALSE, y = FALSE, qr = TRUE, singular.ok = TRUE,
   contrasts = NULL, offset, start = NULL, end = NULL, ...)}
-}
 
 \arguments{
   \item{formula}{a \code{"formula"} describing the linear model to be fit.
@@ -54,9 +63,9 @@ and time-series regression relationships.
 
 \details{
 The interface and internals of \code{dynlm} are very similar to \code{\link{lm}},
-but currently \code{dynlm} offers two advantages over the direct use of
+but currently \code{dynlm} offers three advantages over the direct use of
 \code{lm}: 1. extended formula processing, 2. preservation of time-series
-attributes.
+attributes, 3. instrumental variables regression (via two-stage least squares).
 
 For specifying the \code{formula} of the model to be fitted, there are
 additional functions available which facilitate the specification of 
@@ -71,7 +80,7 @@ support for such data, hence a major aim of \code{dynlm} is to preserve
 time-series properties of the data. Explicit support is currently available 
 for \code{"ts"} and \code{"zoo"} series. Internally, the data is kept as a \code{"zoo"}
 series and coerced back to \code{"ts"} if the original dependent variable was of
-that class (and not internal \code{NA}s were created by the \code{na.action}).
+that class (and no internal \code{NA}s were created by the \code{na.action}).
 }
 
 \seealso{\code{\link[zoo]{zoo}}, \code{\link[zoo]{merge.zoo}}}
@@ -99,9 +108,13 @@ plot(uk)
 lines(fitted(dfm0), col = 2)
 lines(fitted(dfm2), col = 4)
 
+## regression on multiple lags in a single L() call
+dfm3 <- dynlm(uk ~ L(uk, c(1, 11, 12)), start = c(1975, 1), end = c(1982, 12))
+anova(dfm, dfm3)
+
 ## Examples 7.11/7.12 from Greene (1993)
-if(require(lmtest)) {
-data(USDistLag)
+if(require("lmtest")) {
+data("USDistLag")
 dfm1 <- dynlm(consumption ~ gnp + L(consumption), data = USDistLag)
 dfm2 <- dynlm(consumption ~ gnp + L(gnp), data = USDistLag)
 plot(USDistLag[, "consumption"])
