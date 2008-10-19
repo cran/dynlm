@@ -72,7 +72,13 @@ additional functions available which facilitate the specification of
 dynamic models. An example would be \code{d(y) ~ L(y, 2)}, where
 \code{d(x, k)} is \code{diff(x, lag = k)} and \code{L(x, k)} is
 \code{lag(x, lag = -k)}, note the difference in sign. The default
-for \code{k} is in both cases \code{1}.
+for \code{k} is in both cases \code{1}. For \code{L()}, it
+can also be vector-valued, e.g., \code{y ~ L(y, 1:4)}. Furthermore,
+Furthermore, there is an additional function \code{season(x, ref = NULL)}
+which creates a factor with levels for each cycle of the season. Using
+the \code{ref} argument, the reference level can be changed from the default
+first level to any other. See below for examples and \code{\link{M1Germany}}
+for a more elaborate application.
 
 The specification of dynamic relationships only makes sense if there is an
 underlying ordering of the observations. Currently, \code{lm} offers only limited
@@ -81,6 +87,11 @@ time-series properties of the data. Explicit support is currently available
 for \code{"ts"} and \code{"zoo"} series. Internally, the data is kept as a \code{"zoo"}
 series and coerced back to \code{"ts"} if the original dependent variable was of
 that class (and no internal \code{NA}s were created by the \code{na.action}).
+
+To specify a set of insruments, formulas of type \code{y ~ x1 + x2 + x3| z1 + z2}
+can be used where \code{z1} and \code{z2} represent the instruments. Again,
+the extended formula processing described above can be employed for all variables
+in the model.
 }
 
 \seealso{\code{\link[zoo]{zoo}}, \code{\link[zoo]{merge.zoo}}}
