@@ -166,8 +166,8 @@ dynlm <- function(formula, data, subset, weights, na.action,
       }
       
       ## main regression
-      rval <- if(is.null(w)) lm.fit(x, y, offset = offset, singular.ok=singular.ok, ...)
-	else lm.wfit(x, y, w, offset = offset, singular.ok=singular.ok, ...)
+      rval <- if(is.null(w)) lm.fit(x, y, offset = offset, singular.ok = singular.ok, ...)
+	else lm.wfit(x, y, w, offset = offset, singular.ok = singular.ok, ...)
     }
     class(rval) <- c(if(is.matrix(y)) "mlm", "lm")
     rval$na.action <- attr(mf, "na.action")
@@ -184,7 +184,7 @@ dynlm <- function(formula, data, subset, weights, na.action,
     rval$twostage <- twostage
     if(twostage) {
       rval$formula <- ff
-      rval$residuals <- y1 - predict(rval, newdata = as.data.frame(x1))
+      rval$residuals <- y1 - as.vector(x1 %*% rval$coefficients)
       rval$fitted <- y1 - rval$residuals
     }
 

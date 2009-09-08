@@ -1,3 +1,9 @@
+Changes in Version 0.2-3
+
+  o fixed bug when lagged variables are used in instrumental
+    variables regression.
+
+
 Changes in Version 0.2-2
 
   o added CITATION file
