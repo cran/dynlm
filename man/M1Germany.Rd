@@ -24,7 +24,7 @@ This is essentially the same data set as \code{\link[strucchange]{GermanM1}},
 the important difference is that it is stored as a \code{\link[zoo]{zoo}} series 
 and not as a data frame. It does not contain differenced and lagged versions
 of the variables (as \code{GermanM1}) does, because these do not have to be 
-computed explicitely before applying \code{dynlm}.
+computed explicitly before applying \code{dynlm}.
 
 The (short) story behind the data is the following (for more detailed information
 see \code{\link[strucchange]{GermanM1}}):
@@ -54,7 +54,7 @@ Structural Change in Dynamic Econometric Models,
 
 \examples{
 data("M1Germany")
-## fit the model of Lütkepohl et al. (1999) on the history period
+## fit the model of Luetkepohl et al. (1999) on the history period
 ## before the monetary unification 
 histfm <- dynlm(d(logm1) ~ d(L(loggnp, 2)) + d(interest) + d(L(interest)) + d(logprice) +
                            L(logm1) + L(loggnp) + L(interest) +

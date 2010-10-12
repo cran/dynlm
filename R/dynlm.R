@@ -34,6 +34,32 @@ dynlm <- function(formula, data, subset, weights, na.action,
         rval <- zoo(rval, index(x), ofreq)
 	return(rval)
     }, envir = Zenv)
+    assign("trend", function(x, scale = TRUE)
+    {
+        freq <- ofreq <- if(inherits(x, "ts")) frequency(x) else attr(x, "frequency")	
+	if(is.null(freq) | !scale) freq <- 1
+        stopifnot(freq >= 1 && identical(all.equal(freq, round(freq)), TRUE))
+        freq <- round(freq)
+	rval <- zoo(seq_along(index(x))/freq, index(x), frequency = ofreq)
+	return(rval)
+    }, envir = Zenv)
+    assign("harmon", function(x, order = 1)
+    {
+        freq <- frequency(x)
+	stopifnot(freq > 1 && identical(all.equal(freq, round(freq)), TRUE))
+	freq <- round(freq)
+	order <- round(order)
+        stopifnot(order <= freq/2)
+        rval <- outer(2 * pi * index(x), 1:order)
+        rval <- cbind(apply(rval, 2, cos), apply(rval, 2, sin))
+        colnames(rval) <- if(order == 1) {
+	  c("cos", "sin")
+	} else {
+	  c(paste("cos", 1:order, sep = ""), paste("sin", 1:order, sep = ""))
+	}
+        if((2 * order) == freq) rval <- rval[, -(2 * order)]
+	return(rval)
+    }, envir = Zenv)
     ## model.frame.dynformula relies on merge.zoo
     assign("model.frame.dynformula", function (formula, data = NULL, subset = NULL, 
     na.action = na.omit, drop.unused.levels = FALSE, xlev = NULL, ...) 
