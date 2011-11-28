@@ -181,10 +181,10 @@ dynlm <- function(formula, data, subset, weights, na.action,
         z <- model.matrix(terms(ff2), mf)
 	xnam <- colnames(x1)
 	ynam <- colnames(y1)
-	auxreg <- if(is.null(w)) lm.fit(z, cbind(y1, x1), offset = offset, singular.ok=singular.ok, ...)
-          else lm.wfit(z, cbind(y1, x1), w, offset = offset, singular.ok=singular.ok, ...)
-        x <- auxreg$fitted[, -(1:NCOL(y1)), drop = FALSE]
-        y <- auxreg$fitted[, 1:NCOL(y1)]
+	auxreg <- if(is.null(w)) lm.fit(z, cbind(y1, x1), offset = offset, singular.ok = singular.ok, ...)
+          else lm.wfit(z, cbind(y1, x1), w, offset = offset, singular.ok = singular.ok, ...)
+        x <- auxreg$fitted.values[, -(1:NCOL(y1)), drop = FALSE]
+        y <- auxreg$fitted.values[, 1:NCOL(y1)]
 	colnames(x) <- xnam
 	colnames(y) <- ynam
       } else {
@@ -211,7 +211,7 @@ dynlm <- function(formula, data, subset, weights, na.action,
     if(twostage) {
       rval$formula <- ff
       rval$residuals <- y1 - as.vector(x1 %*% rval$coefficients)
-      rval$fitted <- y1 - rval$residuals
+      rval$fitted.values <- y1 - rval$residuals
     }
 
     class(rval) <- c("dynlm", class(rval))
@@ -238,21 +238,52 @@ print.dynlm <- function(x, ...) {
   NextMethod()
 }
 
-summary.dynlm <- function(object, vcov. = NULL, df = NULL, ...) {
+summary.dynlm <- function(object, vcov. = NULL, df = NULL, ...)
+{
+  ## call lm method
   rval <- NextMethod()
+  
+  ## store frequency
   rval$frequency <- object$frequency
+
+  ## compute partial Wald tests if vcov./df specified
   if(any(c(!is.null(vcov.), !is.null(df)))) {
     coefmat <- coeftest(object, vcov. = vcov., df = df)
     attr(coefmat, "method") <- NULL
     class(coefmat) <- "matrix"
     rval$coefficients <- coefmat
+  }
+
+  ## compute overall Wald tests if 2SLS or vcov./df specified
+  if(object$twostage | any(c(!is.null(vcov.), !is.null(df)))) {
     Rmat <- if(attr(object$terms, "intercept"))
-      cbind(0, diag(length(coef(object))-1)) else diag(length(coef(object)))
-    rval$fstatistic[1] <- linear.hypothesis(object, Rmat, vcov. = vcov.)[2,"F"]
-    ## FIXME: make this default for linear.hypothesis.default?
+      cbind(0, diag(length(coef(object)) - 1)) else diag(length(coef(object)))
+    rval$fstatistic[1] <- linearHypothesis(object, Rmat, vcov. = vcov.)[2, "F"]
+    ## FIXME: make this default for linearHypothesis.default?
     ## FIXME: seem to need to set r = 0 for hypothesis printing?
     if(!is.null(df)) rval$fstatistic[3] <- df
   }
+
+  ## R-squared
+  if(object$twostage) {
+    res <- object$residuals
+    y <- object$fitted.values + res
+    n <- NROW(res)
+    w <- object$weights
+    if(is.null(w)) w <- rep(1, n)
+    res <- res * sqrt(w)
+    rss <- sum(res^2)
+    if(attr(object$terms, "intercept")) {
+      tss <- sum(w * (y - weighted.mean(y, w))^2)
+      dfi <- 1    
+    } else {
+      tss <- sum(w * y^2)
+      dfi <- 0
+    }
+    rval$r.squared <- 1 - rss/tss
+    rval$adj.r.squared <- 1 - (1 - rval$r.squared) * ((n - dfi)/object$df.residual)
+  }
+
   class(rval) <- c("summary.dynlm", class(rval))
   return(rval)
 }
