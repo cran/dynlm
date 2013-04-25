@@ -72,7 +72,7 @@ dynlm <- function(formula, data, subset, weights, na.action,
 	formula <- terms(formula)
 	attr(formula, "predvars") <- as.call(append(merge.zoo, args))
 	attr(formula, "predvars")[[1]] <- as.name("merge.zoo")
-	NextMethod("model.frame", formula = formula)
+	NextMethod("model.frame", formula = formula, ...)
     }, envir = Zenv)
 
     ## original class of the dependent variable
