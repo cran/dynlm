@@ -1,6 +1,12 @@
-import("stats", "zoo", "strucchange")
+import("stats", "zoo")
 
-export("dynlm")
+importFrom("car", "linearHypothesis")
+importFrom("lmtest", "coeftest")
+
+export(
+  "dynlm",
+  "recresid.dynlm"
+)
 
 S3method("time", "dynlm")
 S3method("index", "dynlm")
@@ -9,7 +15,7 @@ S3method("end", "dynlm")
 S3method("summary", "dynlm")
 S3method("print", "dynlm")
 S3method("print", "summary.dynlm")
-S3method("recresid", "dynlm")
+## S3method("recresid", "dynlm")
 
 ## S3method("model.frame", "dynformula")
 

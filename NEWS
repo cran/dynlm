@@ -1,3 +1,15 @@
+Changes in Version 0.3-3
+
+  o Streamlined Depends/Imports/Suggests. Now "dynlm" only depends on zoo
+    but imports from stats, car, and lmtest. Packages datasets, strucchange,
+    sandwich, and TSA are suggested (for use in examples).
+
+  o Improved evaluation of pre-computed formulas (suggested by
+    Vaidotas Zemlys).
+
+  o Added tests/ with output from examples for R CMD check.
+
+
 Changes in Version 0.3-2
 
   o Bug fix so that weights/offset can actually be used.
@@ -18,30 +30,30 @@ Changes in Version 0.3-0
 
 Changes in Version 0.2-3
 
-  o fixed bug when lagged variables are used in instrumental
+  o Fixed bug when lagged variables are used in instrumental
     variables regression.
 
 
 Changes in Version 0.2-2
 
-  o added CITATION file
+  o Added CITATION file.
 
 
 Changes in Version 0.2-1
 
-  o enhanced documentation ?dynlm
+  o Enhanced documentation ?dynlm.
 
 
 Changes in Version 0.2-0
 
-  o added support for instrumental variables regression
+  o Added support for instrumental variables regression
     (two-stage least squares) via formulas like
       dynlm(y ~ x1 + x2 | z1 + z2 + z3, data = mydata)
     where z1, z2, z3 are the instruments.
   
-  o enabled specification of multiple lags via formulas like
+  o Enabled specification of multiple lags via formulas like
       dynlm(y ~ L(x, 0:4), data = mydata)
     where y is regressed on x and lags 1 through 4 of x.
 
-  o fixed bug in time properties when there were leading
-    NAs in the data
+  o Fixed bug in time properties when there were leading
+    NAs in the data.

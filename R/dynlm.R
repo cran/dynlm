@@ -108,6 +108,9 @@ dynlm <- function(formula, data, subset, weights, na.action,
     ## call model.frame
     mf[[1]] <- as.name("model.frame")
     mf[[2]] <- as.call(list(as.name("dynformula"), mf[[2]]))
+    ## evaluate dynformula only in the right environment
+    mf[[2]] <- eval(mf[[2]], envir = Zenv)
+    environment(mf[[2]]) <- Zenv
     ## and evaluate in Zenv such that L() and d() are known
     mf <- eval(mf, envir = Zenv)
 
@@ -248,7 +251,7 @@ summary.dynlm <- function(object, vcov. = NULL, df = NULL, ...)
 
   ## compute partial Wald tests if vcov./df specified
   if(any(c(!is.null(vcov.), !is.null(df)))) {
-    coefmat <- coeftest(object, vcov. = vcov., df = df)
+    coefmat <- lmtest::coeftest(object, vcov. = vcov., df = df)
     attr(coefmat, "method") <- NULL
     class(coefmat) <- "matrix"
     rval$coefficients <- coefmat
@@ -258,7 +261,7 @@ summary.dynlm <- function(object, vcov. = NULL, df = NULL, ...)
   if(object$twostage | any(c(!is.null(vcov.), !is.null(df)))) {
     Rmat <- if(attr(object$terms, "intercept"))
       cbind(0, diag(length(coef(object)) - 1)) else diag(length(coef(object)))
-    rval$fstatistic[1] <- linearHypothesis(object, Rmat, vcov. = vcov.)[2, "F"]
+    rval$fstatistic[1] <- car::linearHypothesis(object, Rmat, vcov. = vcov.)[2, "F"]
     ## FIXME: make this default for linearHypothesis.default?
     ## FIXME: seem to need to set r = 0 for hypothesis printing?
     if(!is.null(df)) rval$fstatistic[3] <- df
@@ -298,7 +301,6 @@ print.summary.dynlm <- function(x, ...) {
 }
 
 recresid.dynlm <- function(x, ...) {
-  stopifnot(require("strucchange"))
   rval <- NextMethod()
   res <- residuals(x)
   if(inherits(res, "zoo")) {

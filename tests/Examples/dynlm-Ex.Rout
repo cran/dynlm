@@ -1,0 +1,278 @@
+
+R version 2.15.0 (2012-03-30)
+Copyright (C) 2012 The R Foundation for Statistical Computing
+ISBN 3-900051-07-0
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> pkgname <- "dynlm"
+> source(file.path(R.home("share"), "R", "examples-header.R"))
+> options(warn = 1)
+> library('dynlm')
+Loading required package: zoo
+
+Attaching package: 'zoo'
+
+The following object(s) are masked from 'package:base':
+
+    as.Date, as.Date.numeric
+
+Loading required package: lmtest
+Loading required package: car
+Loading required package: MASS
+Loading required package: nnet
+> 
+> assign(".oldSearch", search(), pos = 'CheckExEnv')
+> cleanEx()
+> nameEx("M1Germany")
+> ### * M1Germany
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: M1Germany
+> ### Title: German M1 Money Demand
+> ### Aliases: M1Germany
+> ### Keywords: datasets
+> 
+> ### ** Examples
+> 
+> data("M1Germany")
+> ## fit the model of Luetkepohl et al. (1999) on the history period
+> ## before the monetary unification 
+> histfm <- dynlm(d(logm1) ~ d(L(loggnp, 2)) + d(interest) + d(L(interest)) + d(logprice) +
++                            L(logm1) + L(loggnp) + L(interest) +
++                            season(logm1, ref = 4),
++                 data = M1Germany, start = c(1961, 1), end = c(1990, 2))
+> 
+> ## fit on extended sample period
+> fm <- update(histfm, end = c(1995, 4))
+> 
+> if(require("strucchange")) {
++   scus <- gefp(fm, fit = NULL)
++   plot(scus, functional = supLM(0.1))
++ }
+Loading required package: strucchange
+Loading required package: sandwich
+> 
+> 
+> 
+> cleanEx()
+
+detaching 'package:strucchange', 'package:sandwich'
+
+> nameEx("dynlm")
+> ### * dynlm
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: dynlm
+> ### Title: Dynamic Linear Models and Time Series Regression
+> ### Aliases: dynlm print.dynlm summary.dynlm print.summary.dynlm time.dynlm
+> ###   index.dynlm start.dynlm end.dynlm
+> ### Keywords: regression
+> 
+> ### ** Examples
+> 
+> ###########################
+> ## Dynamic Linear Models ##
+> ###########################
+> 
+> ## multiplicative SARIMA(1,0,0)(1,0,0)_12 model fitted
+> ## to UK seatbelt data
+> data("UKDriverDeaths", package = "datasets")
+> uk <- log10(UKDriverDeaths)
+> dfm <- dynlm(uk ~ L(uk, 1) + L(uk, 12))
+> dfm
+
+Time series regression with "ts" data:
+Start = 1970(1), End = 1984(12)
+
+Call:
+dynlm(formula = uk ~ L(uk, 1) + L(uk, 12))
+
+Coefficients:
+(Intercept)     L(uk, 1)    L(uk, 12)  
+     0.1826       0.4310       0.5112  
+
+> ## explicitly set start and end
+> dfm <- dynlm(uk ~ L(uk, 1) + L(uk, 12), start = c(1975, 1), end = c(1982, 12))
+> dfm
+
+Time series regression with "ts" data:
+Start = 1975(1), End = 1982(12)
+
+Call:
+dynlm(formula = uk ~ L(uk, 1) + L(uk, 12), start = c(1975, 1), 
+    end = c(1982, 12))
+
+Coefficients:
+(Intercept)     L(uk, 1)    L(uk, 12)  
+     0.5418       0.2072       0.6228  
+
+> 
+> ## remove lag 12
+> dfm0 <- update(dfm, . ~ . - L(uk, 12))
+> anova(dfm0, dfm)
+Analysis of Variance Table
+
+Model 1: uk ~ L(uk, 1)
+Model 2: uk ~ L(uk, 1) + L(uk, 12)
+  Res.Df     RSS Df Sum of Sq      F    Pr(>F)    
+1     94 0.24019                                  
+2     93 0.13598  1   0.10421 71.272 4.007e-13 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 
+> 
+> ## add season term
+> dfm1 <- dynlm(uk ~ 1, start = c(1975, 1), end = c(1982, 12))
+> dfm2 <- dynlm(uk ~ season(uk), start = c(1975, 1), end = c(1982, 12))
+> anova(dfm1, dfm2)
+Analysis of Variance Table
+
+Model 1: uk ~ 1
+Model 2: uk ~ season(uk)
+  Res.Df     RSS Df Sum of Sq      F    Pr(>F)    
+1     95 0.32151                                  
+2     84 0.07277 11   0.24874 26.102 < 2.2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 
+> 
+> plot(uk)
+> lines(fitted(dfm0), col = 2)
+> lines(fitted(dfm2), col = 4)
+> 
+> ## regression on multiple lags in a single L() call
+> dfm3 <- dynlm(uk ~ L(uk, c(1, 11, 12)), start = c(1975, 1), end = c(1982, 12))
+> anova(dfm, dfm3)
+Analysis of Variance Table
+
+Model 1: uk ~ L(uk, 1) + L(uk, 12)
+Model 2: uk ~ L(uk, c(1, 11, 12))
+  Res.Df     RSS Df Sum of Sq      F Pr(>F)
+1     93 0.13598                           
+2     92 0.13253  1 0.0034481 2.3936 0.1253
+> 
+> ## Examples 7.11/7.12 from Greene (1993)
+> data("USDistLag", package = "lmtest")
+> dfm1 <- dynlm(consumption ~ gnp + L(consumption), data = USDistLag)
+> dfm2 <- dynlm(consumption ~ gnp + L(gnp), data = USDistLag)
+> plot(USDistLag[, "consumption"])
+> lines(fitted(dfm1), col = 2)
+> lines(fitted(dfm2), col = 4)
+> encomptest(dfm1, dfm2)
+Encompassing test
+
+Model 1: consumption ~ gnp + L(consumption)
+Model 2: consumption ~ gnp + L(gnp)
+Model E: consumption ~ gnp + L(consumption) + L(gnp)
+          Res.Df Df      F    Pr(>F)    
+M1 vs. ME     15 -1 12.569 0.0029371 ** 
+M2 vs. ME     15 -1 27.093 0.0001067 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 
+> 
+> 
+> ###############################
+> ## Time Series Decomposition ##
+> ###############################
+> 
+> ## airline data
+> data("AirPassengers", package = "datasets")
+> ap <- log(AirPassengers)
+> ap_fm <- dynlm(ap ~ trend(ap) + season(ap))
+> summary(ap_fm)
+
+Time series regression with "ts" data:
+Start = 1949(1), End = 1960(12)
+
+Call:
+dynlm(formula = ap ~ trend(ap) + season(ap))
+
+Residuals:
+      Min        1Q    Median        3Q       Max 
+-0.156370 -0.041016  0.003677  0.044069  0.132324 
+
+Coefficients:
+               Estimate Std. Error t value Pr(>|t|)    
+(Intercept)    4.726780   0.018894 250.180  < 2e-16 ***
+trend(ap)      0.120826   0.001432  84.399  < 2e-16 ***
+season(ap)Feb -0.022055   0.024211  -0.911  0.36400    
+season(ap)Mar  0.108172   0.024212   4.468 1.69e-05 ***
+season(ap)Apr  0.076903   0.024213   3.176  0.00186 ** 
+season(ap)May  0.074531   0.024215   3.078  0.00254 ** 
+season(ap)Jun  0.196677   0.024218   8.121 2.98e-13 ***
+season(ap)Jul  0.300619   0.024221  12.411  < 2e-16 ***
+season(ap)Aug  0.291324   0.024225  12.026  < 2e-16 ***
+season(ap)Sep  0.146690   0.024229   6.054 1.39e-08 ***
+season(ap)Oct  0.008532   0.024234   0.352  0.72537    
+season(ap)Nov -0.135186   0.024240  -5.577 1.34e-07 ***
+season(ap)Dec -0.021321   0.024246  -0.879  0.38082    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 
+
+Residual standard error: 0.0593 on 131 degrees of freedom
+Multiple R-squared: 0.9835,	Adjusted R-squared: 0.982 
+F-statistic: 649.4 on 12 and 131 DF,  p-value: < 2.2e-16 
+
+> 
+> ## Alternative time trend specifications:
+> ##   time(ap)                  1949 + (0, 1, ..., 143)/12
+> ##   trend(ap)                 (1, 2, ..., 144)/12
+> ##   trend(ap, scale = FALSE)  (1, 2, ..., 144)
+> 
+> ## Exhibit 3.5/3.6 from Cryer & Chan (2008)
+> if(require("TSA")) {
++ data("tempdub", package = "TSA")
++ td_lm <- dynlm(tempdub ~ harmon(tempdub))
++ summary(td_lm)
++ plot(tempdub, type = "p")
++ lines(fitted(td_lm), col = 2)
++ }
+Loading required package: TSA
+Loading required package: leaps
+Loading required package: locfit
+Loading required package: akima
+Loading required package: lattice
+locfit 1.5-6 	 2010-01-20 
+Loading required package: mgcv
+This is mgcv 1.7-13. For overview type 'help("mgcv-package")'.
+Loading required package: tseries
+Loading required package: quadprog
+
+Attaching package: 'TSA'
+
+The following object(s) are masked from 'package:stats':
+
+    acf, arima
+
+The following object(s) are masked from 'package:utils':
+
+    tar
+
+> 
+> 
+> 
+> ### * <FOOTER>
+> ###
+> cat("Time elapsed: ", proc.time() - get("ptime", pos = 'CheckExEnv'),"\n")
+Time elapsed:  4.596 0.096 4.71 0 0 
+> grDevices::dev.off()
+null device 
+          1 
+> ###
+> ### Local variables: ***
+> ### mode: outline-minor ***
+> ### outline-regexp: "\\(> \\)?### [*]+" ***
+> ### End: ***
+> quit('no')

@@ -7,6 +7,7 @@
 \alias{index.dynlm}
 \alias{start.dynlm}
 \alias{end.dynlm}
+\alias{recresid.dynlm}
 
 \title{Dynamic Linear Models and Time Series Regression}
 
@@ -151,7 +152,7 @@ dfm2 <- dynlm(consumption ~ gnp + L(gnp), data = USDistLag)
 plot(USDistLag[, "consumption"])
 lines(fitted(dfm1), col = 2)
 lines(fitted(dfm2), col = 4)
-encomptest(dfm1, dfm2)
+if(require("lmtest")) encomptest(dfm1, dfm2)
 
 
 ###############################
