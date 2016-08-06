@@ -136,13 +136,16 @@ dynlm <- function(formula, data, subset, weights, na.action,
              }
     if(end < start) {
       warning("empty model frame specified")
-      mf <- head(mf, 0)
-      mf1 <- head(mf1, 0)
+      mf <- mf[0, ]
+      mf1 <- mf1[0, ]
     } else {
       mf <- mf[start:end,,drop=FALSE]
       mf1 <- mf1[start:end]
       if(!is.null(mfna))
-        attr(mf, "na.action") <- mfna[as.vector(mfna) >= start & as.vector(mfna) <= end]
+        attr(mf, "na.action") <- structure(
+	  mfna[as.vector(mfna) >= start & as.vector(mfna) <= end],
+	  class = class(mfna)
+	)
     }
         
     ## convert back to "ts" or "numeric"
@@ -165,9 +168,13 @@ dynlm <- function(formula, data, subset, weights, na.action,
     attr(mt, "dataClasses") <- NULL #FIXME#
     y <- model.response(mf, "numeric")
     w <- model.weights(mf)
+    if(!is.null(w)) w <- as.numeric(w)
     offset <- model.offset(mf)
-    if(!is.null(offset) && length(offset) != NROW(y)) stop("Number of offsets is ",
-      length(offset), ", should equal ", NROW(y), " (number of observations)")
+    if(!is.null(offset)) {
+      offset <- as.numeric(offset)
+      if(length(offset) != NROW(y)) stop("Number of offsets is ",
+        length(offset), ", should equal ", NROW(y), " (number of observations)")
+    }
 
     if (is.empty.model(mt)) {
       x <- NULL
