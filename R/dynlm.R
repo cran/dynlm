@@ -64,12 +64,15 @@ dynlm <- function(formula, data, subset, weights, na.action,
     assign("model.frame.dynformula", function (formula, data = NULL, subset = NULL, 
     na.action = na.omit, drop.unused.levels = FALSE, xlev = NULL, ...) 
     {
-	if (is.null(data)) data <- parent.frame()
+	if (is.null(data)) {
+	  data <- as.list(parent.frame())
+	  data <- data[!sapply(data, inherits, "function")]
+	}
 	if (!is.list(data)) data <- as.list(data)
-	args <- as.list(attr(terms(formula), "variables"))[-1]
+	args <- as.list(attr(terms(formula, data = data), "variables"))[-1]
 	args$retclass <- "list"
 	args$all <- FALSE
-	formula <- terms(formula)
+	formula <- terms(formula, data = data)
 	attr(formula, "predvars") <- as.call(append(merge.zoo, args))
 	attr(formula, "predvars")[[1]] <- as.name("merge.zoo")
 	NextMethod("model.frame", formula = formula, ...)
@@ -78,7 +81,7 @@ dynlm <- function(formula, data, subset, weights, na.action,
     ## original class of the dependent variable
     if(missing(data)) data <- Zenv
     orig.class <- if(is.data.frame(data) || is.environment(data))
-                    class(eval(attr(terms(formula), "variables")[[2]], data, Zenv))
+                    class(eval(attr(terms(formula, data = data), "variables")[[2]], data, Zenv))
 		  else class(data)
 
     ## prepare model.frame call

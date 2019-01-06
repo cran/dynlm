@@ -1,3 +1,9 @@
+Changes in Version 0.3-6
+
+  o Correctly expand '.' in dynlm(y ~ ., data = d) (suggested by Julien
+    Mc Donald-Guimond).
+    
+
 Changes in Version 0.3-5
 
   o Preserve class attribute of "na.action" (based on fix suggested by
